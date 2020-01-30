@@ -12,7 +12,6 @@ namespace StockTracker.Controllers
     [Route("api/[controller]")]
     public class SampleDataController : Controller
     {
-        private readonly IWeatherForecast _weatherForecast;
 
         [HttpGet("[action]")]
         public IEnumerable<WeatherForecastModel> WeatherForecasts()
