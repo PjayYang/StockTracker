@@ -1,37 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { makeStyles } from '@material-ui/core/styles';
+import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
+import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+
+const columns = [
+    { id: 'dateFormatted', label: 'Date', minWidth: 170 },
+    {
+        id: 'temperatureC', label: 'Temp. (C)', minWidth: 100 },
+    {
+        id: 'temperatureF',
+        label: 'Temp. (F)',
+        minWidth: 170,
+        align: 'right',
+        format: value => value.toLocaleString(),
+    },
+    {
+        id: 'summary',
+        label: 'Summary',
+        minWidth: 170,
+        align: 'right',
+        format: value => value.toLocaleString(),
+    }
+];
 
 const useStyles = makeStyles({
-    table: {
-        minWidth: 650
+    root: {
+        width: '100%'
+    },
+    container: {
+        maxHeight: 440
     }
 });
 
-const rows = [
-    createData('Frozen yoghurt', 159, 6.0, 24, 4.0),
-    createData('Ice cream sandwich', 237, 9.0, 37, 4.3),
-    createData('Eclair', 262, 16.0, 24, 6.0),
-    createData('Cupcake', 305, 3.7, 67, 4.3),
-    createData('Gingerbread', 356, 16.0, 49, 3.9),
-];
-
-function createData(name, calories, fat, carbs, protein) {
-    return { name, calories, fat, carbs, protein };
-}
-
-
-
 export function FetchData() {
-    const [forecasts, setForecasts] = useState([]);
+    const [rows, setForecasts] = useState([]);
     const [loading, setloading] = useState(true);
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const classes = useStyles();
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = event => {
+        setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
     useEffect(() => {
         function getData() {
             fetch('api/SampleData/WeatherForecasts')
@@ -40,9 +62,9 @@ export function FetchData() {
                     setForecasts(data);
                     setloading(false);
                 });
-        };
+        }
 
-        if (forecasts.length === 0) {
+        if (rows.length === 0) {
             getData();
         }
     });
@@ -50,30 +72,51 @@ export function FetchData() {
     let contents = loading
         ? <p><em>Loading...</em></p>
         : (<div>
-            <h1>Weather forecast</h1>
-            <p>This component demonstrates fetching data from the server.</p>
-            <TableContainer component={Paper}>
-                <Table className={classes.table} size="small" aria-label="a dense table">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell align="right">Date</TableCell>
-                            <TableCell align="right">Temperature F</TableCell>
-                            <TableCell align="right">Temperature C</TableCell>
-                            <TableCell align="right">Summary</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {forecasts.map(row => (
-                            <TableRow key={row.name}>
-                                <TableCell align="right">{row.dateFormatted}</TableCell>
-                                <TableCell align="right">{row.temperatureC}</TableCell>
-                                <TableCell align="right">{row.temperatureF}</TableCell>
-                                <TableCell align="right">{row.summary}</TableCell>
+            <h1>Weather Forecasts</h1>
+            <Paper className={classes.root}>
+                <TableContainer className={classes.container}>
+                    <Table stickyHeader aria-label="sticky table">
+                        <TableHead>
+                            <TableRow>
+                                {columns.map(column => (
+                                    <TableCell
+                                        key={column.id}
+                                        align={column.align}
+                                        style={{ minWidth: column.minWidth }}
+                                    >
+                                        {column.label}
+                                    </TableCell>
+                                ))}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
+                        </TableHead>
+                        <TableBody>
+                            {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
+                                return (
+                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
+                                        {columns.map(column => {
+                                            const value = row[column.id];
+                                            return (
+                                                <TableCell key={column.id} align={column.align}>
+                                                    {column.format && typeof value === 'number' ? column.format(value) : value}
+                                                </TableCell>
+                                            );
+                                        })}
+                                    </TableRow>
+                                );
+                            })}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    component="div"
+                    count={rows.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onChangePage={handleChangePage}
+                    onChangeRowsPerPage={handleChangeRowsPerPage}
+                />
+            </Paper>
         </div>);
 
     return contents;
