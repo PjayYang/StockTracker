@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Typo from '@material-ui/core';
 
 export class FetchData extends Component {
   displayName = FetchData.name
