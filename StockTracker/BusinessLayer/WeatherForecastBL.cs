@@ -9,6 +9,17 @@ namespace StockTracker.BusinessLayer
 {
     public class WeatherForecastBL : IWeatherForecast
     {
+
+        private int[] getTempCArr()
+        {
+            int[] tempCArr = new int[5];
+
+            for (var i = 0; i < 5; i++)
+            {
+                tempCArr[i] = new Random().Next(-22, 55);
+            }
+            return tempCArr;
+        }
         public IEnumerable<WeatherForecastModel> getdata()
         {
             string[] Summaries = new[]
@@ -16,11 +27,14 @@ namespace StockTracker.BusinessLayer
             "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
         };
             var rng = new Random();
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecastModel
+            var tempCArr = getTempCArr();
+
+            return Enumerable.Range(0, 5).Select(index => new WeatherForecastModel
             {
                 DateFormatted = DateTime.Now.AddDays(index).ToString("d"),
-                TemperatureC = rng.Next(-20, 55),
-                Summary = Summaries[rng.Next(Summaries.Length)]
+                TemperatureC = tempCArr[index],
+                Summary = Summaries[rng.Next(Summaries.Length)],
+                TemperatureF = 32 + (int)(tempCArr[index] / 0.5556)
             });
         }
     }
