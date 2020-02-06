@@ -10,7 +10,7 @@ import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 
 const columns = [
-    { id: 'symbol', label: 'Symbol', minWidth: 170 },
+    //{ id: 'symbol', label: 'Symbol', minWidth: 170 },
     {
         id: 'open', label: 'Open', minWidth: 100
     },
@@ -19,28 +19,28 @@ const columns = [
         label: 'High',
         minWidth: 170,
         align: 'right',
-        format: value => value.toLocaleString(),
+        format: value => value.toLocaleString()
     },
     {
         id: 'low',
         label: 'Low',
         minWidth: 170,
         align: 'right',
-        format: value => value.toLocaleString(),
+        format: value => value.toLocaleString()
     },
     {
         id: 'close',
         label: 'Close',
         minWidth: 170,
         align: 'right',
-        format: value => value.toLocaleString(),
+        format: value => value.toLocaleString()
     },
     {
         id: 'volume',
         label: 'Volume',
         minWidth: 170,
         align: 'right',
-        format: value => value.toLocaleString(),
+        format: value => value.toLocaleString()
     }
 ];
 
@@ -74,6 +74,7 @@ const tempGetData = () => {
 
 export function FetchData() {
     const [rows, setForecasts] = useState([]);
+    const [symbol, setSymbol] = useState("");
     const [loading, setloading] = useState(true);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -96,10 +97,10 @@ export function FetchData() {
             //        setForecasts(data);
             //        setloading(false);
             //    });
-
-            setForecasts(tempGetData());
+            var data = tempGetData();
+            setForecasts(data);
             setloading(false);
-
+            setSymbol(data[0]["symbol"]);
         }
 
         if (rows.length === 0) {
@@ -110,7 +111,7 @@ export function FetchData() {
     let contents = loading
         ? <p><em>Loading...</em></p>
         : (<div>
-            <h1>Weather Forecasts</h1>
+            <h1>Microsoft ({symbol})</h1>
             <Paper className={classes.root}>
                 <TableContainer className={classes.container}>
                     <Table stickyHeader aria-label="sticky table">
