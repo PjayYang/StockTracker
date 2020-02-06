@@ -2,3 +2,5 @@
 .vs/StockTracker/v15/Server/sqlite3/db.lock
 .vs/StockTracker/v15/.suo
 .vs/StockTracker/v15/.suo
+*.dtbcache
+.vs/StockTracker/v15

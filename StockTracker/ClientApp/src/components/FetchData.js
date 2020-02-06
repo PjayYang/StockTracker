@@ -10,19 +10,34 @@ import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
 
 const columns = [
-    { id: 'dateFormatted', label: 'Date', minWidth: 170 },
+    { id: 'symbol', label: 'Symbol', minWidth: 170 },
     {
-        id: 'temperatureC', label: 'Temp. (C)', minWidth: 100 },
+        id: 'open', label: 'Open', minWidth: 100
+    },
     {
-        id: 'temperatureF',
-        label: 'Temp. (F)',
+        id: 'high',
+        label: 'High',
         minWidth: 170,
         align: 'right',
         format: value => value.toLocaleString(),
     },
     {
-        id: 'summary',
-        label: 'Summary',
+        id: 'low',
+        label: 'Low',
+        minWidth: 170,
+        align: 'right',
+        format: value => value.toLocaleString(),
+    },
+    {
+        id: 'close',
+        label: 'Close',
+        minWidth: 170,
+        align: 'right',
+        format: value => value.toLocaleString(),
+    },
+    {
+        id: 'volume',
+        label: 'Volume',
         minWidth: 170,
         align: 'right',
         format: value => value.toLocaleString(),
@@ -37,6 +52,25 @@ const useStyles = makeStyles({
         maxHeight: 440
     }
 });
+
+const tempGetData = () => {
+    var data = [];
+
+    for (var i = 0; i < 100; i++) {
+        data.push({
+            symbol: "MSFT",
+            open: 179.87,
+            high: 179.96,
+            low: 179.51,
+            close: 179.94,
+            volume: 1154234
+        });
+    }
+
+
+    return data;
+};
+
 
 export function FetchData() {
     const [rows, setForecasts] = useState([]);
@@ -56,12 +90,16 @@ export function FetchData() {
 
     useEffect(() => {
         function getData() {
-            fetch('api/SampleData/WeatherForecasts')
-                .then(response => response.json())
-                .then(data => {
-                    setForecasts(data);
-                    setloading(false);
-                });
+            //fetch('api/SampleData/WeatherForecasts')
+            //    .then(response => response.json())
+            //    .then(data => {
+            //        setForecasts(data);
+            //        setloading(false);
+            //    });
+
+            setForecasts(tempGetData());
+            setloading(false);
+
         }
 
         if (rows.length === 0) {
@@ -80,7 +118,7 @@ export function FetchData() {
                             <TableRow>
                                 {columns.map(column => (
                                     <TableCell
-                                        key={column.id}
+                                        key={column.symbol}
                                         align={column.align}
                                         style={{ minWidth: column.minWidth }}
                                     >
