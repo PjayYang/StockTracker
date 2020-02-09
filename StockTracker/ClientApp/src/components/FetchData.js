@@ -8,40 +8,49 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
+import TextField from '@material-ui/core/TextField';
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 const columns = [
-    //{ id: 'symbol', label: 'Symbol', minWidth: 170 },
     {
-        id: 'open', label: 'Open', minWidth: 100
+        id: 0,
+        name: 'date',
+        label: 'Date'
     },
     {
-        id: 'high',
+        id: 1,
+        name: '1. open',
+        label: 'Open'
+    },
+    {
+        id: 2,
+        name: '2. high',
         label: 'High',
-        minWidth: 170,
-        align: 'right',
         format: value => value.toLocaleString()
     },
     {
-        id: 'low',
+        id: 3,
+        name: '3. low',
         label: 'Low',
-        minWidth: 170,
-        align: 'right',
         format: value => value.toLocaleString()
     },
     {
-        id: 'close',
+        id: 4,
+        name: '4. close',
         label: 'Close',
-        minWidth: 170,
-        align: 'right',
         format: value => value.toLocaleString()
     },
     {
-        id: 'volume',
+        id: 5,
+        name: '5. volume',
         label: 'Volume',
-        minWidth: 170,
-        align: 'right',
         format: value => value.toLocaleString()
     }
+];
+
+const top100Stocks = [
+    { id: "AAPL", name: "Apple Inc." },
+    { id: "MSFT", name: "Microsoft Corporation" }
 ];
 
 const useStyles = makeStyles({
@@ -53,28 +62,9 @@ const useStyles = makeStyles({
     }
 });
 
-const tempGetData = () => {
-    var data = [];
-
-    for (var i = 0; i < 100; i++) {
-        data.push({
-            symbol: "MSFT",
-            open: 179.87,
-            high: 179.96,
-            low: 179.51,
-            close: 179.94,
-            volume: 1154234
-        });
-    }
-
-
-    return data;
-};
-
-
 export function FetchData() {
-    const [rows, setForecasts] = useState([]);
-    const [symbol, setSymbol] = useState("");
+    const [data, setData] = useState([]);
+    const [symbol, setSymbol] = useState();
     const [loading, setloading] = useState(true);
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -89,6 +79,42 @@ export function FetchData() {
         setPage(0);
     };
 
+    const onEquitiesSearch = (event, value) => {
+        if (value) {
+        // TODO: Change the api key from 'demo' to actual API key
+            fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + value.id + '&interval=5min&apikey=demo')
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data['Meta Data']) {
+                        var results = [];
+                        var date;
+                        var id = 0;
+                        for (date in data['Time Series (5min)']) {
+                            var record = {};
+                            var d;
+
+                            for (d in data['Time Series (5min)'][date]) {
+                                record['date'] = date;
+                                record['id'] = id;
+                                record[d] = data['Time Series (5min)'][date][d];
+                            }
+                            id++;
+                            results.push(record);
+                        }
+
+                        setSymbol(data['Meta Data']['2. Symbol']);
+                        setData(results);
+                        setloading(false);
+                    } else {
+                        alert("There was an error on searching Equity.");
+                    }
+                });
+        } else {
+            setData([]);
+        }
+    };
+
     useEffect(() => {
         function getData() {
             //fetch('api/SampleData/WeatherForecasts')
@@ -97,21 +123,30 @@ export function FetchData() {
             //        setForecasts(data);
             //        setloading(false);
             //    });
-            var data = tempGetData();
-            setForecasts(data);
-            setloading(false);
-            setSymbol(data[0]["symbol"]);
+            //var data = tempGetData();
+            //setForecasts(data);
+            //setSymbol(data[0]["symbol"]);
         }
 
-        if (rows.length === 0) {
-            getData();
-        }
+        //if (data.length === 0) {
+        //    getData();
+        //}
     });
 
-    let contents = loading
-        ? <p><em>Loading...</em></p>
-        : (<div>
-            <h1>Microsoft ({symbol})</h1>
+    const headerTitle = data.length === 0 ? "Search Equities" : symbol;
+
+    let contents = (
+        <div>
+            <h1>{headerTitle}</h1>
+            <div><Autocomplete
+                id="combo-box-demo"
+                options={top100Stocks}
+                getOptionLabel={option => option.id}
+                renderOption={option => <React.Fragment><span>{option.name} ({option.id})</span></React.Fragment>}
+                style={{ width: 300 }}
+                renderInput={params => <TextField {...params} label="Search Equities" variant="outlined" fullWidth />}
+                onChange={onEquitiesSearch}
+            /></div>
             <Paper className={classes.root}>
                 <TableContainer className={classes.container}>
                     <Table stickyHeader aria-label="sticky table">
@@ -119,7 +154,7 @@ export function FetchData() {
                             <TableRow>
                                 {columns.map(column => (
                                     <TableCell
-                                        key={column.symbol}
+                                        key={column.id}
                                         align={column.align}
                                         style={{ minWidth: column.minWidth }}
                                     >
@@ -129,11 +164,11 @@ export function FetchData() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
+                            {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
                                 return (
-                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
+                                    <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
                                         {columns.map(column => {
-                                            const value = row[column.id];
+                                            const value = row[column.name];
                                             return (
                                                 <TableCell key={column.id} align={column.align}>
                                                     {column.format && typeof value === 'number' ? column.format(value) : value}
@@ -149,14 +184,15 @@ export function FetchData() {
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 100]}
                     component="div"
-                    count={rows.length}
+                    count={data.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onChangePage={handleChangePage}
                     onChangeRowsPerPage={handleChangeRowsPerPage}
                 />
             </Paper>
-        </div>);
+        </div>
+    );
 
     return contents;
 }
