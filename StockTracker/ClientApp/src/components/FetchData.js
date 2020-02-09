@@ -48,6 +48,7 @@ const columns = [
     }
 ];
 
+// TODO: pull stock symbols from server-side
 const top100Stocks = [
     { id: "AAPL", name: "Apple Inc." },
     { id: "MSFT", name: "Microsoft Corporation" }
@@ -64,11 +65,11 @@ const useStyles = makeStyles({
 
 export function FetchData() {
     const [data, setData] = useState([]);
-    const [symbol, setSymbol] = useState();
-    const [loading, setloading] = useState(true);
+    const [symbol, setSymbol] = useState(); // custom states
+
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
-    const classes = useStyles();
+    const classes = useStyles(); // Tables states
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -105,9 +106,8 @@ export function FetchData() {
 
                         setSymbol(data['Meta Data']['2. Symbol']);
                         setData(results);
-                        setloading(false);
                     } else {
-                        alert("There was an error on searching Equity.");
+                        alert("There was an error searching Equity.");
                     }
                 });
         } else {
@@ -117,20 +117,7 @@ export function FetchData() {
 
     useEffect(() => {
         function getData() {
-            //fetch('api/SampleData/WeatherForecasts')
-            //    .then(response => response.json())
-            //    .then(data => {
-            //        setForecasts(data);
-            //        setloading(false);
-            //    });
-            //var data = tempGetData();
-            //setForecasts(data);
-            //setSymbol(data[0]["symbol"]);
         }
-
-        //if (data.length === 0) {
-        //    getData();
-        //}
     });
 
     const headerTitle = data.length === 0 ? "Search Equities" : symbol;
@@ -139,7 +126,7 @@ export function FetchData() {
         <div>
             <h1>{headerTitle}</h1>
             <div><Autocomplete
-                id="combo-box-demo"
+                id="equity-autocomplete-search"
                 options={top100Stocks}
                 getOptionLabel={option => option.id}
                 renderOption={option => <React.Fragment><span>{option.name} ({option.id})</span></React.Fragment>}
