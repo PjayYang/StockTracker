@@ -95,7 +95,7 @@ export function FetchData() {
     const onEquitiesSearch = (event, value) => {
         if (value) {
             // TODO: Change the api key from 'demo' to actual API key
-            fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + value.id + '&interval=5min&apikey=demo')
+            fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + value.id + '&interval=5min&outputsize=full&apikey=demo')
                 .then(response => response.json())
                 .then(data => {
 
