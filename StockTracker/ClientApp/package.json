@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.9.0",
     "@material-ui/lab": "^4.0.0-alpha.41",
+    "anychart": "^8.7.1",
     "bootstrap": "^3.4.1",
     "d3": "^5.15.0",
     "react": "^16.12.0",
