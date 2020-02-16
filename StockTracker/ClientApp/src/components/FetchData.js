@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Table from '@material-ui/core/Table';
@@ -43,12 +43,6 @@ const columns = [
     }
 ];
 
-// TODO: pull stock symbols from server-side
-const top100Stocks = [
-    { id: "AAPL", name: "Apple Inc." },
-    { id: "MSFT", name: "Microsoft Corporation" }
-];
-
 const useStyles = makeStyles(theme => ({
     container: {
         maxHeight: 500
@@ -78,10 +72,13 @@ const StyledTableRow = withStyles(theme => ({
 }))(TableRow);
 
 export function FetchData() {
+    // Custom States
     const [data, setData] = useState([]);
-    const [symbol, setSymbol] = useState(); // custom states
+    const [symbol, setSymbol] = useState();
+    const [stocks, setStocks] = useState([]); // Final stock in autocomplete list
 
-    const classes = useStyles(); // Tables states
+    // Tables states
+    const classes = useStyles();
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
@@ -92,10 +89,32 @@ export function FetchData() {
         setRowsPerPage(+event.target.value);
         setPage(0);
     };
-    const onEquitiesSearch = (event, value) => {
+
+    const onEquitiesSearch = (event, value, reason) => {
+        //var filteredData = stocks.filter((e) => {
+        //    return (
+        //        e.name.toLowerCase().indexOf(value.toLowerCase()) > -1 ||
+        //        e.id.toLowerCase().indexOf(value.toLowerCase()) > -1
+        //    );
+        //});
+
+        fetch('https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=' + value + '&apikey=demo')
+            .then(response => response.json())
+            .then(data => {
+                var results = [];
+                var extractedData = data['bestMatches'];
+                if (extractedData) {
+                    for (var i = 0; i < extractedData.length; i++) {
+                        results.push({ id: extractedData[i]['1. symbol'], name: extractedData[i]['2. name'] });
+                    }
+                    setStocks(results);
+                }
+            });
+    };
+    const onEquitiesSelect = (event, value) => {
         if (value) {
             // TODO: Change the api key from 'demo' to actual API key
-            fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + value.id + '&interval=5min&outputsize=full&apikey=demo')
+            fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + value.id + '&interval=5min&outputsize=full&apikey=DTERMHIEHFCZJZCD')
                 .then(response => response.json())
                 .then(data => {
 
@@ -103,6 +122,8 @@ export function FetchData() {
                         var results = [];
                         var date;
                         var id = 0;
+
+                        // TODO: create variables for field name in data.
                         for (date in data['Time Series (5min)']) {
                             var record = {};
                             var d;
@@ -122,6 +143,7 @@ export function FetchData() {
                         alert("There was an error searching Equity.");
                     }
                 });
+
         } else {
             setData([]);
         }
@@ -143,14 +165,15 @@ export function FetchData() {
             </div>
             <div>
                 <Box component="span" display="block" p={1} m={1} bgcolor="background.paper">
-                <Autocomplete
-                    id="equity-autocomplete-search"
-                    options={top100Stocks}
-                    getOptionLabel={option => option.id}
-                    renderOption={option => <React.Fragment><span>{option.name} ({option.id})</span></React.Fragment>}
-                    style={{ width: 300 }}
-                    renderInput={params => <TextField {...params} label="Search Equities" variant="outlined" fullWidth />}
-                    onChange={onEquitiesSearch}
+                    <Autocomplete
+                        id="equity-autocomplete-search"
+                        options={stocks}
+                        getOptionLabel={option => option.id}
+                        renderOption={option => <React.Fragment><span>{option.name} ({option.id})</span></React.Fragment>}
+                        style={{ width: 300 }}
+                        renderInput={params => <TextField {...params} label="Search Equities" variant="outlined" fullWidth />}
+                        onChange={onEquitiesSelect}
+                        onInputChange={onEquitiesSearch}
                     />
                 </Box>
             </div>
@@ -158,52 +181,52 @@ export function FetchData() {
                 <Box component="span" display="block" p={1} m={1} bgcolor="background.paper">
                     <Paper className={classes.root}>
                         <TableContainer className={classes.container}>
-                        <Table stickyHeader aria-label="sticky table">
-                            <TableHead>
-                                <TableRow>
-                                    {columns.map(column => (
-                                        <StyledTableCell
-                                            key={column.id}
-                                            align={column.align}
-                                            style={{ minWidth: column.minWidth }}
-                                        >
-                                            {column.label}
-                                        </StyledTableCell>
-                                    ))}
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
-                                    return (
-                                        <StyledTableRow hover role="checkbox" tabIndex={-1} key={row.id}>
-                                            {columns.map(column => {
-                                                const value = row[column.id];
-                                                return (
-                                                    <StyledTableCell key={column.id} align={column.align}>
-                                                        {column.format && typeof value === 'number' ? column.format(value) : value}
-                                                    </StyledTableCell>
-                                                );
-                                            })}
-                                        </StyledTableRow>
-                                    );
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 100]}
-                        component="div"
-                        count={data.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onChangePage={handleChangePage}
-                        onChangeRowsPerPage={handleChangeRowsPerPage}
-                    />
+                            <Table stickyHeader aria-label="sticky table">
+                                <TableHead>
+                                    <TableRow>
+                                        {columns.map(column => (
+                                            <StyledTableCell
+                                                key={column.id}
+                                                align={column.align}
+                                                style={{ minWidth: column.minWidth }}
+                                            >
+                                                {column.label}
+                                            </StyledTableCell>
+                                        ))}
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(row => {
+                                        return (
+                                            <StyledTableRow hover role="checkbox" tabIndex={-1} key={row.id}>
+                                                {columns.map(column => {
+                                                    const value = row[column.id];
+                                                    return (
+                                                        <StyledTableCell key={column.id} align={column.align}>
+                                                            {column.format && typeof value === 'number' ? column.format(value) : value}
+                                                        </StyledTableCell>
+                                                    );
+                                                })}
+                                            </StyledTableRow>
+                                        );
+                                    })}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                        <TablePagination
+                            rowsPerPageOptions={[10, 25, 100]}
+                            component="div"
+                            count={data.length}
+                            rowsPerPage={rowsPerPage}
+                            page={page}
+                            onChangePage={handleChangePage}
+                            onChangeRowsPerPage={handleChangeRowsPerPage}
+                        />
                     </Paper>
                 </Box>
             </div>
         </div>
-    )
+    );
 
     return contents;
 }

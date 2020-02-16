@@ -1,13 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { makeStyles, withStyles } from '@material-ui/core/styles';
-import Paper from '@material-ui/core/Paper';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TablePagination from '@material-ui/core/TablePagination';
-import TableRow from '@material-ui/core/TableRow';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
@@ -87,15 +79,36 @@ export function CandlestickGraph() {
     const [data, setData] = useState([]);
     const classes = useStyles(); // Tables states
     const [symbol, setSymbol] = useState(); // custom states
-
+    const [stocks, setStocks] = useState([]);
     //useEffect(() => {
 
     //});
 
-    const onEquitiesSearch = (event, value) => {
+    const onEquitiesSearch = (event, value, reason) => {
+        //var filteredData = stocks.filter((e) => {
+        //    return (
+        //        e.name.toLowerCase().indexOf(value.toLowerCase()) > -1 ||
+        //        e.id.toLowerCase().indexOf(value.toLowerCase()) > -1
+        //    );
+        //});
+
+        fetch('https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=' + value + '&apikey=demo')
+            .then(response => response.json())
+            .then(data => {
+                var results = [];
+                var extractedData = data['bestMatches'];
+                if (extractedData) {
+                    for (var i = 0; i < extractedData.length; i++) {
+                        results.push({ id: extractedData[i]['1. symbol'], name: extractedData[i]['2. name'] });
+                    }
+                    setStocks(results);
+                }
+            });
+    };
+    const onEquitiesSelect = (event, value) => {
         if (value) {
             // TODO: Change the api key from 'demo' to actual API key
-            fetch('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + value.id + '&apikey=demo')
+            fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + value.id + '&interval=5min&outputsize=full&apikey=DTERMHIEHFCZJZCD')
                 .then(response => response.json())
                 .then(data => {
 
@@ -103,14 +116,16 @@ export function CandlestickGraph() {
                         var results = [];
                         var date;
                         var id = 0;
-                        for (date in data['Time Series (Daily)']) {
+
+                        // TODO: create variables for field name in data.
+                        for (date in data['Time Series (5min)']) {
                             var record = {};
                             var d;
 
-                            for (d in data['Time Series (Daily)'][date]) {
+                            for (d in data['Time Series (5min)'][date]) {
                                 record['date'] = date;
                                 record['id'] = id;
-                                record[d] = data['Time Series (Daily)'][date][d];
+                                record[d] = data['Time Series (5min)'][date][d];
                             }
                             id++;
                             results.push(record);
@@ -119,32 +134,38 @@ export function CandlestickGraph() {
                         setSymbol(data['Meta Data']['2. Symbol']);
                         setData(results);
                         BuildGraph(results);
+
                     } else {
                         alert("There was an error searching Equity.");
                     }
                 });
+
         } else {
             setData([]);
         }
     };
 
+
+    const headerTitle = data.length === 0 ? "Search Equities" : symbol;
+
     const content = (
         <div>
             <div>
                 <Box component="span" display="block" p={1} m={1} bgcolor="background.paper">
-                    <h1>TEST</h1>
+                    <h1>{headerTitle}</h1>
                 </Box>
             </div>
             <div>
                 <Box component="span" display="block" p={1} m={1} bgcolor="background.paper">
                     <Autocomplete
                         id="equity-autocomplete-search"
-                        options={top100Stocks}
+                        options={stocks}
                         getOptionLabel={option => option.id}
                         renderOption={option => <React.Fragment><span>{option.name} ({option.id})</span></React.Fragment>}
                         style={{ width: 300 }}
                         renderInput={params => <TextField {...params} label="Search Equities" variant="outlined" fullWidth />}
-                        onChange={onEquitiesSearch}
+                        onChange={onEquitiesSelect}
+                        onInputChange={onEquitiesSearch}
                     />
                 </Box>
             </div>
