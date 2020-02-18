@@ -5,6 +5,7 @@ import { Home } from './components/Home';
 import { FetchData } from './components/FetchData';
 import { Counter } from './components/Counter';
 import { CandlestickGraph } from './components/CandlestickGraph';
+import { D3Graph } from './components/d3Graph';
 
 export default class App extends Component {
     displayName = App.name
@@ -16,6 +17,7 @@ export default class App extends Component {
                 <Route path='/counter' component={Counter} />
                 <Route path='/fetchdata' component={FetchData} />
                 <Route path='/candlestickGraph' component={CandlestickGraph} />
+                <Route path='/d3Graph' component={D3Graph} />
             </Layout>
         );
     }

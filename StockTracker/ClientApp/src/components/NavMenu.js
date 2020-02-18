@@ -38,7 +38,12 @@ export class NavMenu extends Component {
                 <Glyphicon glyph='th-list' /> Candlestick Graph
             </NavItem>
             </LinkContainer>
-          </Nav>
+            <LinkContainer to={'/d3Graph'}>
+             <NavItem>
+             <Glyphicon glyph='th-list' /> D3 Graph
+            </NavItem>
+             </LinkContainer>
+            </Nav>
         </Navbar.Collapse>
       </Navbar>
     );
