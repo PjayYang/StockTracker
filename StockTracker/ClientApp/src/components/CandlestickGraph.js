@@ -1,5 +1,5 @@
 ﻿import React, { useState, useEffect } from 'react';
-import { makeStyles, withStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
@@ -13,12 +13,6 @@ const useStyles = makeStyles(theme => ({
         padding: 0
     }
 }));
-
-const top100Stocks = [
-    { id: "AAPL", name: "Apple Inc." },
-    { id: "MSFT", name: "Microsoft Corporation" },
-    { id: "", name: "CandleStick Graph" }
-];
 
 const BuildGraph = (data) => {
     var result = [];
@@ -80,17 +74,8 @@ export function CandlestickGraph() {
     const classes = useStyles(); // Tables states
     const [symbol, setSymbol] = useState(); // custom states
     const [stocks, setStocks] = useState([]);
-    //useEffect(() => {
-
-    //});
 
     const onEquitiesSearch = (event, value, reason) => {
-        //var filteredData = stocks.filter((e) => {
-        //    return (
-        //        e.name.toLowerCase().indexOf(value.toLowerCase()) > -1 ||
-        //        e.id.toLowerCase().indexOf(value.toLowerCase()) > -1
-        //    );
-        //});
 
         fetch('https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=' + value + '&apikey=demo')
             .then(response => response.json())
@@ -105,6 +90,7 @@ export function CandlestickGraph() {
                 }
             });
     };
+
     const onEquitiesSelect = (event, value) => {
         if (value) {
             // TODO: Change the api key from 'demo' to actual API key
@@ -169,7 +155,8 @@ export function CandlestickGraph() {
                     />
                 </Box>
             </div>
-            <div id="container" className={classes.container} />
+            <div id="container" className={classes.container} >
+            </div>
         </div>
     );
 
