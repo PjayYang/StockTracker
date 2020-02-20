@@ -23,26 +23,11 @@ export class NavMenu extends Component {
                 <Glyphicon glyph='home' /> Home
               </NavItem>
             </LinkContainer>
-            <LinkContainer to={'/counter'}>
-              <NavItem>
-                <Glyphicon glyph='education' /> Counter
-              </NavItem>
-            </LinkContainer>
-            <LinkContainer to={'/fetchdata'}>
-              <NavItem>
-                <Glyphicon glyph='th-list' /> Fetch data
-              </NavItem>
-            </LinkContainer>
             <LinkContainer to={'/candlestickGraph'}>
             <NavItem>
                 <Glyphicon glyph='th-list' /> Candlestick Graph
             </NavItem>
             </LinkContainer>
-            <LinkContainer to={'/d3Graph'}>
-             <NavItem>
-             <Glyphicon glyph='th-list' /> D3 Graph
-            </NavItem>
-             </LinkContainer>
             </Nav>
         </Navbar.Collapse>
       </Navbar>
