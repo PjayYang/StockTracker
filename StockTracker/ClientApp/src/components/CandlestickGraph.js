@@ -3,7 +3,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import Box from '@material-ui/core/Box';
-import anychart from 'anychart';
+import *  as d3 from 'd3';
+import Moment from 'moment';
+import BuildD3Graph from './d3Graph';
+
+const dev = "Dev";
+const env = "Dev";
 
 const useStyles = makeStyles(theme => ({
     container: {
@@ -14,85 +19,34 @@ const useStyles = makeStyles(theme => ({
     }
 }));
 
-const BuildGraph = (data) => {
-    var result = [];
-    var convertedResults = [];
-
-    // Convert date string to dates.
-    for (var a = 0; a < data.length; a++) {
-        const date = new Date(data[a]['date']);
-        convertedResults.push([date, data[a]['1. open'], data[a]['2. high'], data[a]['3. low'], data[a]['4. close']]);
-    }
-
-    // Sorts array by date ascending.
-    convertedResults.sort(function (a, b) {
-        return a[0] - b[0];
-    });
-
-    for (var i = 0; i < convertedResults.length; i++) {
-        // day, month, year
-        const date = convertedResults[i][0].toLocaleDateString();
-        var splitDate = date.split("/");
-        if (splitDate[2] === "2020") {
-            var month = parseInt(splitDate[0]);
-            var day = parseInt(splitDate[1]);
-            var year = parseInt(splitDate[2]);
-
-            // Month displays one month ahead, so we have to subtract 1.
-            result.push(
-                [Date.UTC(year, month - 1, day), convertedResults[i][1], convertedResults[i][2], convertedResults[i][3], convertedResults[i][4]]
-            );
-        }
-    }
-
-    // create a chart
-    var chart = anychart.candlestick();
-
-    // set the interactivity mode
-    chart.interactivity("by-x");
-
-    // create a japanese candlestick series and set the data
-    var series = chart.candlestick(result);
-    series.pointWidth(20);
-
-    // set the chart title
-    chart.title("Japanese Candlestick Chart: Basic Sample");
-
-    // set the titles of the axes
-    chart.xAxis().title("Date");
-    chart.yAxis().title("Price, $");
-
-    // set the container id
-    chart.container("container");
-
-    // initiate drawing the chart
-    chart.draw();
-};
-
 export function CandlestickGraph() {
     const [data, setData] = useState([]);
     const classes = useStyles(); // Tables states
     const [symbol, setSymbol] = useState(); // custom states
-    const [stocks, setStocks] = useState([]);
+    const [stocks, setStocks] = useState([{ id: "Dev", name: "Dev" }]);
 
     const onEquitiesSearch = (event, value, reason) => {
 
-        fetch('https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=' + value + '&apikey=demo')
-            .then(response => response.json())
-            .then(data => {
-                var results = [];
-                var extractedData = data['bestMatches'];
-                if (extractedData) {
-                    for (var i = 0; i < extractedData.length; i++) {
-                        results.push({ id: extractedData[i]['1. symbol'], name: extractedData[i]['2. name'] });
+        if (env !== dev) {
+            fetch('https://www.alphavantage.co/query?function=SYMBOL_SEARCH&keywords=' + value + '&apikey=DTERMHIEHFCZJZCD')
+                .then(response => response.json())
+                .then(data => {
+                    var results = [];
+                    var extractedData = data['bestMatches'];
+                    if (extractedData) {
+                        for (var i = 0; i < extractedData.length; i++) {
+                            results.push({ id: extractedData[i]['1. symbol'], name: extractedData[i]['2. name'] });
+                        }
+                        setStocks(results);
                     }
-                    setStocks(results);
-                }
-            });
+                }).catch(function (error) {
+                    console.log('Request failed', error);
+                });
+        }
     };
 
     const onEquitiesSelect = (event, value) => {
-        if (value) {
+        if (value && value.name !== dev) {
             // TODO: Change the api key from 'demo' to actual API key
             fetch('https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=' + value.id + '&interval=5min&outputsize=full&apikey=DTERMHIEHFCZJZCD')
                 .then(response => response.json())
@@ -119,14 +73,16 @@ export function CandlestickGraph() {
 
                         setSymbol(data['Meta Data']['2. Symbol']);
                         setData(results);
-                        BuildGraph(results);
-
+                        BuildD3Graph(results, 'Time Series (5min)');
                     } else {
                         alert("There was an error searching Equity.");
                     }
                 });
-
-        } else {
+        }
+        else if (value.name === dev) {
+            BuildD3Graph([], dev);
+        }
+        else {
             setData([]);
         }
     };
@@ -155,8 +111,8 @@ export function CandlestickGraph() {
                     />
                 </Box>
             </div>
-            <div id="container" className={classes.container} >
-            </div>
+            <div id="d3Graph" />
+            <div id="container" className={classes.container} />
         </div>
     );
 

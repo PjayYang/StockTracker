@@ -8,6 +8,7 @@
     "anychart": "^8.7.1",
     "bootstrap": "^3.4.1",
     "d3": "^5.15.0",
+    "eslint": "^5.16.0",
     "moment": "^2.24.0",
     "react": "^16.12.0",
     "react-bootstrap": "^0.31.5",
