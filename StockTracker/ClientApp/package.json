@@ -7,7 +7,7 @@
     "@material-ui/lab": "^4.0.0-alpha.41",
     "anychart": "^8.7.1",
     "bootstrap": "^3.4.1",
-    "d3": "^5.15.0",
+    "d3": "^7.6.1",
     "eslint": "^5.16.0",
     "moment": "^2.24.0",
     "react": "^16.12.0",
